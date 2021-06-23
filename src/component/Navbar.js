@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import HomeIcon from "@material-ui/icons/Home"
 import FeaturedPlayListOutlinedIcon from '@material-ui/icons/FeaturedPlayListOutlined';
 import AssignmentTurnedInOutlinedIcon from '@material-ui/icons/AssignmentTurnedInOutlined'
@@ -16,8 +16,61 @@ import Modal from 'react-modal'
 import { ExpandMore, Link } from "@material-ui/icons";
 import firebase from "firebase";
 
+//SpeechRecoginitionCode
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition
+const mic = new SpeechRecognition()
+
+mic.continuous = true
+mic.interimResults = true
+mic.lang = 'en-US'
+
+
+
 function Navbar(){
 
+  const [isListening, setIsListening] = useState(false)
+  const [note, setNote] = useState(null)
+  const [savedNotes, setSavedNotes] = useState([])
+
+
+  useEffect(() => {
+    handleListen()
+  }, [isListening])
+
+  const handleListen = () => {
+    if (isListening) {
+      mic.start()
+      mic.onend = () => {
+        console.log('continue..')
+        mic.start()
+      }
+    } else {
+      mic.stop()
+      mic.onend = () => {
+        console.log('Stopped Mic on Click')
+      }
+    }
+    mic.onstart = () => {
+      console.log('Mics on')
+    }
+
+    mic.onresult = event => {
+      const transcript = Array.from(event.results)
+        .map(result => result[0])
+        .map(result => result.transcript)
+        .join('')
+      console.log(transcript)
+      setNote(transcript)
+      mic.onerror = event => {
+        console.log(event.error)
+      }
+    }
+  }
+  const handleSaveNote = () => {
+   
+    setNote('')
+  }
     const user = useSelector(selectUser);
     const [IsmodalOpen, setIsModalOpen] = useState(false);
     const [input, setInput] = useState("");
@@ -33,16 +86,18 @@ function Navbar(){
        
           db.collection("questions").add({
             user: user,
-            question: input,
+            question: input || note,
             imageUrl: inputUrl,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            likes:0,
           });
         
     
         setInput("");
         setInputUrl("");
       };
-
+     
+     
     return(
         <div className='qHeader'>
           <div className='qHeader__logo'>
@@ -74,20 +129,20 @@ function Navbar(){
 
 
         </div>
-        <div className='qHeader__input'>
+        {/*<div className='qHeader__input'>
         <SearchIcon />
         <input type='text' placeholder='Search Campus' id="searchItem"></input>
-        </div>
+    </div>*/}
         <div className='qHeader__Rem'>
             <div className='qHeader__avatar'>
-             <Avatar  onClick={() => auth.signOut()}
+             <Avatar  id="log_out" onClick={() => auth.signOut()}
             className="Avatar"
             src={
               user.photo} />
 
             </div>
             <LanguageIcon />
-            <Button onClick={() => setIsModalOpen(true)}>Add Question</Button>
+            <Button onClick={() => setIsModalOpen(true)}id="Add_question">Add Question</Button>
             <Modal
           isOpen={IsmodalOpen}
           onRequestClose={() => setIsModalOpen(false)}
@@ -125,24 +180,40 @@ function Navbar(){
           </div>
           <div className="modal__Field">
             <Input
-              value={input}
+              value={input || note}
               onChange={(e) => setInput(e.target.value)}
               type="text"
               placeholder="Start your question with 'What', 'How', 'Why', etc. "
+              id='msg'
+              
             />
+          
+
           <div className="modal__fieldLink">
               <Link />
               <input
-                value={inputUrl}
+                value={inputUrl} 
                 onChange={(e) => setInputUrl(e.target.value)}
                 type="text"
                 placeholder="Optional: include a link that gives context"
+                id="image_link"
               ></input>
             </div>
             </div>
             <div className="modal__buttons">
-          <button className='cancel' onClick={()=>setIsModalOpen(false)}>Close</button>
-          <button type="sumbit"  onClick={handleQuestion} className="add">
+
+
+            {isListening ? <span>🎙️</span> : <span>🛑🎙️</span>}
+            <button onClick={() => setIsListening(prevState => !prevState)} className="add">
+            Speak Question
+          </button>
+          <button className='add' onClick={handleSaveNote} >Clear</button>
+          
+
+
+
+          <button className='cancel' onClick={()=>setIsModalOpen(false)} id="close_btn">Close</button>
+          <button type="sumbit"  onClick={handleQuestion} className="add" id="submit_btn">
               Add Question
             </button>
             </div>
