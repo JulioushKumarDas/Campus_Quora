@@ -101,6 +101,7 @@ function Login() {
                  onChange={(e) => setEmail(e.target.value)}
                   type="text"
                   placeholder="Email"
+                  id="email"
                 />
               </div>
               <div className="login__inputField">
@@ -109,14 +110,15 @@ function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   type="password"
                   placeholder="Password"
+                  id="password"
                 />
               </div>
             </div>
             <div className="login__forgButt">
               <small>Forgot Password?</small>
-              <button onClick={handleSignIn}>Login</button>
+              <button onClick={handleSignIn} id="login_btn">Login</button>
             </div>
-            <button onClick={registerSignIn}>Register</button>
+            <button onClick={registerSignIn} id="register_btn">Register</button>
           </div>
         </div>
         <div className="login__lang">

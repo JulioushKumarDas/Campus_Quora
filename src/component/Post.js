@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Avatar } from "@material-ui/core";
 
-
+import { FaBeer } from 'react-icons/fa';
+import { IconContext } from "react-icons";
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import ArrowUpwardOutlinedIcon from "@material-ui/icons/ArrowUpwardOutlined";
 import ArrowDownwardOutlinedIcon from "@material-ui/icons/ArrowDownwardOutlined";
 import RepeatOutlinedIcon from "@material-ui/icons/RepeatOutlined";
@@ -17,16 +20,17 @@ import firebase from "firebase";
 import '../css/Post.css'
 
 
-function Post({ Id, question, imageUrl, timestamp, users }) {
+function Post({ Id, question, imageUrl, timestamp, users}) {
     const user = useSelector(selectUser);
     const dispatch = useDispatch();
-  
+ 
+ 
     const [IsmodalOpen, setIsModalOpen] = useState(false);
     const questionId = useSelector(selectQuestionId);
     const [answer, setAnswer] = useState("");
     const [getAnswers, setGetAnswers] = useState([]);
-
-
+    var [liked,setLiked] = useState(false)
+  
     useEffect(() => {
         if (questionId) {
           db.collection("questions")
@@ -50,6 +54,7 @@ function Post({ Id, question, imageUrl, timestamp, users }) {
             answer: answer,
             questionId: questionId,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            likes:0,
           });
         }
         console.log(questionId);
@@ -58,6 +63,7 @@ function Post({ Id, question, imageUrl, timestamp, users }) {
       };
     
 
+      
    
     return(
         <div
@@ -86,7 +92,7 @@ function Post({ Id, question, imageUrl, timestamp, users }) {
                 <button className='post__btnAnswer'
                 onClick={() => setIsModalOpen(true)}
                 className="post__btnAnswer"
-                >Answer</button>
+                id="answer_box_btn">Answer</button>
                 <Modal
             isOpen={IsmodalOpen}
             onRequestClose={() => setIsModalOpen(false)}
@@ -124,13 +130,14 @@ function Post({ Id, question, imageUrl, timestamp, users }) {
                 onChange={(e) => setAnswer(e.target.value)}
                 placeholder="Enter Your Answer"
                 type="text"
+                id="answer_text"
               />
             </div>
             <div className="modal__button">
-              <button className="cancle" onClick={() => setIsModalOpen(false)}>
+              <button className="cancle" id="cancel_btn" onClick={() => setIsModalOpen(false)} id="cancel_btn">
                 Cancel
               </button>
-              <button type="sumbit" onClick={handleAnswer} className="add">
+              <button type="sumbit" onClick={handleAnswer} className="add" id="add_answer">
                 Add Answer
               </button>
             </div>
@@ -175,9 +182,19 @@ function Post({ Id, question, imageUrl, timestamp, users }) {
         </div>
         <div className='post__footer'>
             <div className='post__footerAction'>
-            <button ><ArrowUpwardOutlinedIcon /></button>
-            
-          <ArrowDownwardOutlinedIcon />
+            {/*<button onClick={isListening=true}><ArrowUpwardOutlinedIcon /></button>
+           
+              <button onKeyPress={isListening=false}><ArrowDownwardOutlinedIcon /></button>*/}
+
+  
+
+
+              <button className="add" onClick={()=>{
+                setLiked(!liked)
+              }} id="like_btn">Like</button>
+        {liked ? <span><FavoriteIcon color='secondary'/></span> : <span><FavoriteBorderIcon /></span>}
+        
+
             </div>
             <RepeatOutlinedIcon />
         <ChatBubbleOutlineOutlinedIcon />
